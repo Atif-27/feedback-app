@@ -1,21 +1,34 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import Card from './Card';
 import Button from './Button';
 import RaitingSelect from './RaitingSelect';
+import { useFeedback } from '../context/FeedbackContext';
 
-function FeedbackForm({ handleAdd }) {
+function FeedbackForm() {
+  const { handleAdd, feedbackEdit, handleUpdate } = useFeedback();
   const [text, setText] = useState('');
   const [rating, setRating] = useState('');
+  useEffect(() => {
+    if (!feedbackEdit.edit) return;
+    setText(feedbackEdit.item.text);
+    setRating(feedbackEdit.item.rating);
+  }, [feedbackEdit]);
   function handleTextChange(e) {
     setText(e.target.value);
   }
+
   function submitHandler(e) {
     e.preventDefault();
 
     if (rating) {
-      const newFeedback = { id: uuidv4(), rating, text };
-      handleAdd(newFeedback);
+      if (feedbackEdit.edit) {
+        const newFeedback = { ...feedbackEdit.item, rating, text };
+        handleUpdate(newFeedback);
+      } else {
+        const newFeedback = { id: uuidv4(), rating, text };
+        handleAdd(newFeedback);
+      }
       setText('');
       setRating('');
     } else {
@@ -35,9 +48,15 @@ function FeedbackForm({ handleAdd }) {
             onChange={(e) => handleTextChange(e)}
             value={text}
           />
-          <Button type="submit" isDisabled={!isMore}>
-            Send
-          </Button>
+          {feedbackEdit.edit ? (
+            <Button type="submit" isDisabled={!isMore}>
+              Update
+            </Button>
+          ) : (
+            <Button type="submit" isDisabled={!isMore}>
+              Send
+            </Button>
+          )}
         </div>
         {text && !isMore && (
           <div className="message">Text Must Be Atleast 10 characters</div>

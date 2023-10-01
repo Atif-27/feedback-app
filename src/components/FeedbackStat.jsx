@@ -1,4 +1,7 @@
-function FeedbackStat({ feedback }) {
+import { useFeedback } from '../context/FeedbackContext';
+
+function FeedbackStat() {
+  const { feedback } = useFeedback();
   let avg = feedback.reduce((i, item) => i + item.rating, 0);
   let length = feedback.length;
   avg = avg / length;
